@@ -46,20 +46,26 @@ passport.deserializeUser((user, done) => {
   done(null, user);
 });
 
+// Home page
+// app.get("/", (req, res) => {
+//   res.send(`<a href='/auth/google'>Login with Google</a>`);
+// });
+
 app.get("/", (req, res) => {
-  // res.send(`<a href='/auth/google'>Login with Google</a>`);
-  if (req.user) {
-    res.send(`<a href='/profile'>Profile</a>`);
+  if (req.isAuthenticated()) {
+    res.redirect("/profile");
   } else {
     res.send(`<a href='/auth/google'>Login with Google</a>`);
   }
 });
 
+// Google authentication
 app.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// Google authentication callback
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
@@ -68,13 +74,25 @@ app.get(
   }
 );
 
+// Profile details
 app.get("/profile", (req, res) => {
-  res.send(`Welcome ${req.user.displayName}`);
+  if (!req.user) {
+    return res.redirect("/");
+  }
+  res.send(`
+    <h1>Welcome ${req?.user?.displayName}!</h1>
+    <img src="${req?.user?.photos[0]?.value}" />
+    <p>Email: ${req?.user?.emails[0]?.value}</p>
+    <a href="/logout">Logout</a>
+  `);
 });
 
-// Logout route
-app.get("/logout", (req, res) => {
-  req.logout(() => {
+// Logout
+app.get("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
     res.redirect("/");
   });
 });
