@@ -47,7 +47,12 @@ passport.deserializeUser((user, done) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(`<a href='/auth/google'>Login with Google</a>`);
+  // res.send(`<a href='/auth/google'>Login with Google</a>`);
+  if (req.user) {
+    res.send(`<a href='/profile'>Profile</a>`);
+  } else {
+    res.send(`<a href='/auth/google'>Login with Google</a>`);
+  }
 });
 
 app.get(
